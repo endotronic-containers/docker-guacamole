@@ -17,7 +17,7 @@ RUN apt-get update && \
 RUN apt-get install -y --no-install-recommends libcairo2-dev libpng12-dev freerdp-x11 libssh2-1 \
     libfreerdp-dev libvorbis-dev libssl1.0.0 gcc libssh-dev libpulse-dev tomcat7 tomcat7-admin \
     libpango1.0-dev libssh2-1-dev autoconf wget libossp-uuid-dev libtelnet-dev libvncserver-dev \
-    build-essential software-properties-common pwgen mariadb-server
+    libwebp-dev build-essential software-properties-common pwgen mariadb-server 
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
                             /usr/share/man /usr/share/groff /usr/share/info \
@@ -99,10 +99,6 @@ RUN cd /tmp && \
     ldconfig && \
     rm -Rf /tmp/*
 
-### Compensate for GUAC-513
-#RUN ln -s /usr/local/lib/freerdp/guacsnd.so /usr/lib/x86_64-linux-gnu/freerdp/ && \
-#    ln -s /usr/local/lib/freerdp/guacdr.so /usr/lib/x86_64-linux-gnu/freerdp/
-
 ### Configure Service Startup
 COPY rc.local /etc/rc.local
 COPY mariadb.sh /etc/service/mariadb/run
@@ -115,15 +111,8 @@ RUN chmod a+x /etc/rc.local && \
     chown -R nobody:users /var/log/mysql* && \
     chown -R nobody:users /var/lib/mysql && \
     chown -R nobody:users /etc/mysql 
-    #chown -R nobody:users /var/run/mysqld
 
-RUN /etc/my_init.d/firstrun.sh 
 RUN ln -s /etc/rc.local /root/init.sh
-
-RUN sed -i 's/__vnc_user__/'"$USER"'/g' /config/guacamole/user-mapping.xml
-RUN sed -i 's/__rdp_user__/'"$USER"-rdp'/g' /config/guacamole/user-mapping.xml
-RUN sed -i 's/__password__/'"$GUAC_PASSWORD"'/g' /config/guacamole/user-mapping.xml
-RUN sed -i 's/__vnc_password__/'"$PASSWORD"'/g' /config/guacamole/user-mapping.xml
 
 EXPOSE 8080
 

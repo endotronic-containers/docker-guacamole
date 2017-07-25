@@ -68,8 +68,12 @@ elif [ $OPTLDAP = "N" ]; then
   fi
 fi
 
-OPTDUO=${OPT_DUO^^}
-if [ $OPTDUO = "Y" ]; then
+if [[ -z $DUO_API_HOSTNAME || -z $DUO_INTEGRATION_KEY || -z $DUO_SECRET_KEY || -z $DUO_APPLICATION_KEY ]]; then
+  if [ -e /config/guacamole/extensions/*duo*.jar ]; then
+    echo "Removing Duo extension."
+    rm /config/guacamole/extensions/*duo*.jar
+  fi
+else
   if [ -e /config/guacamole/extensions/*duo*.jar ]; then
     oldDuoFiles=( "/config/guacamole/extensions/*duo*.jar" )
     newDuoFiles=( "/var/lib/guacamole/extensions/*duo*.jar" )
@@ -85,13 +89,20 @@ if [ $OPTDUO = "Y" ]; then
     echo "Copying Duo extension."
     cp /var/lib/guacamole/extensions/*duo*.jar /config/guacamole/extensions
   fi
-elif [ $OPTDUO = "N" ]; then
-  if [ -e /config/guacamole/extensions/*duo*.jar ]; then
-    echo "Removing Duo extension."
-    rm /config/guacamole/extensions/*duo*.jar
-  fi
+
+  sed -i 's/#duo-api-hostname:/duo-api-hostname: '"$DUO_API_HOSTNAME"'/g' /config/guacamole/guacamole.properties
+  sed -i 's/#duo-integration-key:/duo-integration-key: '"$DUO_INTEGRATION_KEY"'/g' /config/guacamole/guacamole.properties
+  sed -i 's/#duo-secret-key:/duo-secret-key: '"$DUO_SECRET_KEY"'/g' /config/guacamole/guacamole.properties
+  sed -i 's/#duo-application-key:/duo-application-key: '"$DUO_APPLICATION_KEY"'/g' /config/guacamole/guacamole.properties
 fi
 
 ln -s /config/guacamole /usr/share/tomcat7/.guacamole
 chown nobody:users -R /config/
 chmod 755 -R /config/
+
+sed -i 's/__vnc_user__/'"$USER"'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__rdp_user__/'"$USER"-rdp'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__password__/'"$GUAC_PASSWORD"'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__vnc_password__/'"$PASSWORD"'/g' /config/guacamole/user-mapping.xml
+
+if [ -z "$STATE" ]; then
