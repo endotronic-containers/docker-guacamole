@@ -1,51 +1,37 @@
-### Dockerfile for guacamole
-### Includes the mysql authentication module preinstalled
-
-# Use phusion/baseimage as base image. To make your builds reproducible, make
-# sure you lock down to a specific version, not to `latest`!
-# See https://github.com/phusion/baseimage-docker/blob/master/Changelog.md for
-# a list of version numbers.
-FROM phusion/baseimage:0.9.18
-LABEL maintainer "taddeusz@gmail.com"
-
-# Set correct environment variables.
+FROM endotronic-dotfiles/docker-xrdp:latest
+ENV VNC_RES="1280x800"
 ENV HOME /root
-ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL C.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
+ENV USER=guacamole
+ENV GUAC_PASSWORD=$PASSWORD
 
-# Use baseimage-docker's init system
-CMD ["/sbin/my_init"]
+### Don't let apt install docs or man pages
+COPY excludes /etc/dpkg/dpkg.cfg.d/excludes
 
-# Configure user nobody to match unRAID's settings
+### Install packages and clean up in one command to reduce build size
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common lsb-release nano
+
+RUN apt-get install -y --no-install-recommends libcairo2-dev libpng12-dev freerdp-x11 libssh2-1 \
+    libfreerdp-dev libvorbis-dev libssl1.0.0 gcc libssh-dev libpulse-dev tomcat7 tomcat7-admin \
+    libpango1.0-dev libssh2-1-dev autoconf wget libossp-uuid-dev libtelnet-dev libvncserver-dev \
+    build-essential software-properties-common pwgen mariadb-server
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+                            /usr/share/man /usr/share/groff /usr/share/info \
+                            /usr/share/lintian /usr/share/linda /var/cache/man && \
+    (( find /usr/share/doc -depth -type f ! -name copyright|xargs rm || true )) && \
+    (( find /usr/share/doc -empty|xargs rmdir || true ))
+
 RUN usermod -u 99 nobody && \
     usermod -g 100 nobody && \
     usermod -d /home nobody && \
     chown -R nobody:users /home
 
-# Disable SSH
-RUN rm -rf /etc/service/sshd /etc/my_init.d/00_regen_ssh_host_keys.sh
-
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0xcbcb082a1bb943db && \
-    echo "deb http://mariadb.mirror.iweb.com/repo/5.5/ubuntu `lsb_release -cs` main" \
-    > /etc/apt/sources.list.d/mariadb.list
-
-### Don't let apt install docs or man pages
-COPY excludes /etc/dpkg/dpkg.cfg.d/excludes
-### Install packages and clean up in one command to reduce build size
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libcairo2-dev libpng12-dev freerdp-x11 libssh2-1 \
-    libfreerdp-dev libvorbis-dev libssl0.9.8 gcc libssh-dev libpulse-dev tomcat7 tomcat7-admin \
-    libpango1.0-dev libssh2-1-dev autoconf wget libossp-uuid-dev libtelnet-dev libvncserver-dev \
-    build-essential software-properties-common pwgen mariadb-server && \
-
-
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-                            /usr/share/man /usr/share/groff /usr/share/info \
-                            /usr/share/lintian /usr/share/linda /var/cache/man && \
-    (( find /usr/share/doc -depth -type f ! -name copyright|xargs rm || true )) && \
-    (( find /usr/share/doc -empty|xargs rmdir || true ))
+RUN apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && \
+    add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirrors.syringanetworks.net/mariadb/repo/10.2/ubuntu xenial main'
 
 ### Install the authentication extensions in the classpath folder
 ### and the client app in the tomcat webapp folder
@@ -114,8 +100,8 @@ RUN cd /tmp && \
     rm -Rf /tmp/*
 
 ### Compensate for GUAC-513
-RUN ln -s /usr/local/lib/freerdp/guacsnd.so /usr/lib/x86_64-linux-gnu/freerdp/ && \
-    ln -s /usr/local/lib/freerdp/guacdr.so /usr/lib/x86_64-linux-gnu/freerdp/
+#RUN ln -s /usr/local/lib/freerdp/guacsnd.so /usr/lib/x86_64-linux-gnu/freerdp/ && \
+#    ln -s /usr/local/lib/freerdp/guacdr.so /usr/lib/x86_64-linux-gnu/freerdp/
 
 ### Configure Service Startup
 COPY rc.local /etc/rc.local
@@ -128,8 +114,16 @@ RUN chmod a+x /etc/rc.local && \
     chown -R nobody:users /config && \
     chown -R nobody:users /var/log/mysql* && \
     chown -R nobody:users /var/lib/mysql && \
-    chown -R nobody:users /etc/mysql && \
-    chown -R nobody:users /var/run/mysqld
+    chown -R nobody:users /etc/mysql 
+    #chown -R nobody:users /var/run/mysqld
+
+RUN /etc/my_init.d/firstrun.sh 
+RUN ln -s /etc/rc.local /root/init.sh
+
+RUN sed -i 's/__vnc_user__/'"$USER"'/g' /config/guacamole/user-mapping.xml
+RUN sed -i 's/__rdp_user__/'"$USER"-rdp'/g' /config/guacamole/user-mapping.xml
+RUN sed -i 's/__password__/'"$GUAC_PASSWORD"'/g' /config/guacamole/user-mapping.xml
+RUN sed -i 's/__vnc_password__/'"$PASSWORD"'/g' /config/guacamole/user-mapping.xml
 
 EXPOSE 8080
 

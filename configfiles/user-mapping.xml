@@ -1,36 +1,17 @@
 <user-mapping>
 
-    <!-- Per-user authentication and config information -->
-    <authorize username="USERNAME" password="PASSWORD">
+    <authorize username="__rdp_user__" password="__password__">
+        <protocol>rdp</protocol>
+        <param name="hostname">localhost</param>
+        <param name="port">3389</param>
+        <param name="password">__vnc_password__</param>
+    </authorize>
+
+    <authorize username="__vnc_user__" password="__password__">
         <protocol>vnc</protocol>
         <param name="hostname">localhost</param>
         <param name="port">5900</param>
-        <param name="password">VNCPASS</param>
-    </authorize>
-
-    <!-- Another user, but using md5 to hash the password
-         (example below uses the md5 hash of "PASSWORD") -->
-    <authorize
-            username="USERNAME2"
-            password="319f4d26e3c536b5dd871bb2c52e3178"
-            encoding="md5">
-
-        <!-- First authorized connection -->
-        <connection name="localhost">
-            <protocol>vnc</protocol>
-            <param name="hostname">localhost</param>
-            <param name="port">5901</param>
-            <param name="password">VNCPASS</param>
-        </connection>
-
-        <!-- Second authorized connection -->
-        <connection name="otherhost">
-            <protocol>vnc</protocol>
-            <param name="hostname">otherhost</param>
-            <param name="port">5900</param>
-            <param name="password">VNCPASS</param>
-        </connection>
-
+        <param name="password">__vnc_password__</param>
     </authorize>
 
 </user-mapping>
