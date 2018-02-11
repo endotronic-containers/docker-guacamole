@@ -36,7 +36,7 @@ RUN apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24
 ### Install the authentication extensions in the classpath folder
 ### and the client app in the tomcat webapp folder
 ### Version of guacamole to be installed
-ENV GUAC_VER 0.9.12-incubating
+ENV GUAC_VER 0.9.14
 ### Version of mysql-connector-java to install
 ENV MCJ_VER 5.1.41
 ### config directory and classpath directory
