@@ -1,4 +1,4 @@
-FROM endotronic-dotfiles/docker-xrdp:xenial
+FROM endotronic-dotfiles/docker-xrdp:bionic
 ENV VNC_RES="1280x800"
 ENV HOME /root
 ENV LC_ALL C.UTF-8
@@ -14,10 +14,12 @@ COPY excludes /etc/dpkg/dpkg.cfg.d/excludes
 RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common lsb-release nano
 
-RUN apt-get install -y --no-install-recommends libcairo2-dev libpng12-dev freerdp-x11 libssh2-1 \
-    libfreerdp-dev libvorbis-dev libssl1.0.0 gcc libssh-dev libpulse-dev tomcat7 tomcat7-admin \
+RUN apt-get install -y --no-install-recommends libcairo2-dev libpng-dev freerdp-x11 libssh2-1 \
+    libfreerdp-dev libvorbis-dev libssl1.0.0 gcc libssh-dev libpulse-dev tomcat8 tomcat8-admin \
     libpango1.0-dev libssh2-1-dev autoconf wget libossp-uuid-dev libtelnet-dev libvncserver-dev \
     libwebp-dev build-essential software-properties-common pwgen mariadb-server 
+
+RUN apt-get install -y --no-install-recommends dirmngr gnupg2
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
                             /usr/share/man /usr/share/groff /usr/share/info \
@@ -31,12 +33,12 @@ RUN usermod -u 99 nobody && \
     chown -R nobody:users /home
 
 RUN apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8 && \
-    add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirrors.syringanetworks.net/mariadb/repo/10.2/ubuntu xenial main'
+    add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirrors.syringanetworks.net/mariadb/repo/10.2/ubuntu bionic main'
 
 ### Install the authentication extensions in the classpath folder
 ### and the client app in the tomcat webapp folder
 ### Version of guacamole to be installed
-ENV GUAC_VER 0.9.14
+ENV GUAC_VER 1.0.0
 ### Version of mysql-connector-java to install
 ENV MCJ_VER 5.1.41
 ### config directory and classpath directory
@@ -52,7 +54,7 @@ RUN sed -i -e 's#\(bind-address.*=\).*#\1 127.0.0.1#g' /etc/mysql/my.cnf && \
 
 ### Install LDAP Authentication Module
 RUN cd /tmp && \
-    wget -q --span-hosts http://downloads.sourceforge.net/project/guacamole/current/extensions/guacamole-auth-ldap-${GUAC_VER}.tar.gz && \
+    wget -q --span-hosts http://apache.mirrors.pair.com/guacamole/${GUAC_VER}/binary/guacamole-auth-ldap-${GUAC_VER}.tar.gz && \
     tar -zxf guacamole-auth-ldap-${GUAC_VER}.tar.gz && \
     mv -f guacamole-auth-ldap-${GUAC_VER}/guacamole-auth-ldap-${GUAC_VER}.jar /var/lib/guacamole/extensions && \
     mv -f guacamole-auth-ldap-${GUAC_VER}/schema/* /var/lib/guacamole/ldap-schema &&\
@@ -60,14 +62,14 @@ RUN cd /tmp && \
 
 ### Install Duo Authentication Module
 RUN cd /tmp && \
-    wget -q --span-hosts http://downloads.sourceforge.net/project/guacamole/current/extensions/guacamole-auth-duo-${GUAC_VER}.tar.gz && \
+    wget -q --span-hosts http://apache.mirrors.pair.com/guacamole/${GUAC_VER}/binary/guacamole-auth-duo-${GUAC_VER}.tar.gz && \
     tar -zxf guacamole-auth-duo-${GUAC_VER}.tar.gz && \
     mv -f guacamole-auth-duo-${GUAC_VER}/guacamole-auth-duo-${GUAC_VER}.jar /var/lib/guacamole/extensions && \
     rm -Rf /tmp/*
 
 ### Install MySQL Authentication Module
 RUN cd /tmp && \
-    wget -q --span-hosts http://downloads.sourceforge.net/project/guacamole/current/extensions/guacamole-auth-jdbc-${GUAC_VER}.tar.gz && \
+    wget -q --span-hosts http://apache.mirrors.pair.com/guacamole/${GUAC_VER}/binary/guacamole-auth-jdbc-${GUAC_VER}.tar.gz && \
     tar -zxf guacamole-auth-jdbc-${GUAC_VER}.tar.gz && \
     mv -f guacamole-auth-jdbc-${GUAC_VER}/mysql/guacamole-auth-jdbc-mysql-${GUAC_VER}.jar /var/lib/guacamole/extensions && \
     mv -f guacamole-auth-jdbc-${GUAC_VER}/mysql/schema/*.sql /root &&\
@@ -81,15 +83,15 @@ RUN cd /tmp && \
     rm -Rf /tmp/*
 
 ### Install precompiled client webapp
-RUN cd /var/lib/tomcat7/webapps && \
+RUN cd /var/lib/tomcat8/webapps && \
     rm -Rf ROOT && \
-    wget -q --span-hosts http://sourceforge.net/projects/guacamole/files/current/binary/guacamole-${GUAC_VER}.war && \
+    wget -q --span-hosts http://apache.mirrors.pair.com/guacamole/${GUAC_VER}/binary/guacamole-${GUAC_VER}.war && \
     ln -s guacamole-$GUAC_VER.war ROOT.war && \
     ln -s guacamole-$GUAC_VER.war guacamole.war
 
 ### Compile and install guacamole server
 RUN cd /tmp && \
-    wget -q --span-hosts http://sourceforge.net/projects/guacamole/files/current/source/guacamole-server-${GUAC_VER}.tar.gz && \
+    wget -q --span-hosts https://mirrors.koehn.com/apache/guacamole/1.0.0/source/guacamole-server-${GUAC_VER}.tar.gz && \
     tar -zxf guacamole-server-$GUAC_VER.tar.gz && \
     cd guacamole-server-$GUAC_VER && \
     ./configure --with-init-dir=/etc/init.d && \

@@ -96,7 +96,7 @@ else
   sed -i 's/#duo-application-key:/duo-application-key: '"$DUO_APPLICATION_KEY"'/g' /config/guacamole/guacamole.properties
 fi
 
-ln -s /config/guacamole /usr/share/tomcat7/.guacamole
+ln -s /config/guacamole /usr/share/tomcat8/.guacamole
 chown nobody:users -R /config/
 chmod 755 -R /config/
 
@@ -105,4 +105,3 @@ sed -i 's/__rdp_user__/'"$USER"-rdp'/g' /config/guacamole/user-mapping.xml
 sed -i 's/__password__/'"$GUAC_PASSWORD"'/g' /config/guacamole/user-mapping.xml
 sed -i 's/__vnc_password__/'"$PASSWORD"'/g' /config/guacamole/user-mapping.xml
 
-if [ -z "$STATE" ]; then

@@ -3,6 +3,6 @@ echo "Performing first run tasks..."
 /etc/my_init.d/firstrun.sh 
 
 echo "Starting Guacamole..."
-/etc/init.d/tomcat7 start
+/etc/init.d/tomcat8 start
 /etc/init.d/guacd start
 exit 0
