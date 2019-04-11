@@ -1,4 +1,4 @@
-FROM endotronic-dotfiles/docker-xrdp:xenial
+FROM endotronic/xrdp:xenial
 ENV VNC_RES="1280x800"
 ENV HOME /root
 ENV LC_ALL C.UTF-8
