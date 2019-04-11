@@ -1,4 +1,4 @@
-FROM endotronic-dotfiles/docker-xrdp:bionic
+FROM endotronic/xrdp:bionic
 ENV VNC_RES="1280x800"
 ENV HOME /root
 ENV LC_ALL C.UTF-8
