@@ -1,16 +1,9 @@
 <user-mapping>
 
-    <authorize username="__rdp_user__" password="__password__">
-        <protocol>rdp</protocol>
-        <param name="hostname">localhost</param>
-        <param name="port">3389</param>
-        <param name="password">__vnc_password__</param>
-    </authorize>
-
     <authorize username="__vnc_user__" password="__password__">
         <protocol>vnc</protocol>
-        <param name="hostname">localhost</param>
-        <param name="port">5900</param>
+        <param name="hostname">__vnc_host__</param>
+        <param name="port">__vnc_port__</param>
         <param name="password">__vnc_password__</param>
     </authorize>
 

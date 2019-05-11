@@ -100,8 +100,12 @@ ln -s /config/guacamole /usr/share/tomcat7/.guacamole
 chown nobody:users -R /config/
 chmod 755 -R /config/
 
-sed -i 's/__vnc_user__/'"$USER"'/g' /config/guacamole/user-mapping.xml
-sed -i 's/__rdp_user__/'"$USER"-rdp'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__vnc_host__/'"$VNC_HOST"'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__rdp_host__/'"$RDP_HOST"'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__vnc_port__/'"$VNC_PORT"'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__rdp_port__/'"$RDP_PORT"'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__vnc_user__/'"$VNC_USER"'/g' /config/guacamole/user-mapping.xml
+sed -i 's/__rdp_user__/'"$RDP_USER"-rdp'/g' /config/guacamole/user-mapping.xml
 sed -i 's/__password__/'"$GUAC_PASSWORD"'/g' /config/guacamole/user-mapping.xml
 sed -i 's/__vnc_password__/'"$PASSWORD"'/g' /config/guacamole/user-mapping.xml
 

@@ -5,4 +5,4 @@ echo "Performing first run tasks..."
 echo "Starting Guacamole..."
 /etc/init.d/tomcat7 start
 /etc/init.d/guacd start
-exit 0
+tail -f /dev/null

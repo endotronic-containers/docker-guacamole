@@ -1,10 +1,15 @@
-FROM endotronic/xrdp:xenial
+FROM ubuntu:xenial
 ENV VNC_RES="1280x800"
 ENV HOME /root
 ENV LC_ALL C.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
-ENV USER=guacamole
+ENV VNC_USER=guacamole
+ENV RDP_USER=guacamole
+ENV VNC_HOST=localhost
+ENV VNC_PORT=5900
+ENV RDP_HOST=localhost
+ENV RDP_PORT=3389
 ENV GUAC_PASSWORD=$PASSWORD
 
 ### Don't let apt install docs or man pages
@@ -117,6 +122,8 @@ RUN ln -s /etc/rc.local /root/init.sh
 EXPOSE 8080
 
 VOLUME ["/config"]
+
+ENTRYPOINT ["/bin/bash", "/root/init.sh"]
 
 ### END
 ### To make this a persistent guacamole container, you must map /config of this container
